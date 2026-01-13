@@ -49,8 +49,11 @@ class EG_PContent(container):  # noqa: N801
             if fld_char is not None:
                 # THE PARAGRAPH ENDED IN AN INCOMPLETE FORM-FIELD
                 if options.get("greedy-text-input", True):
-                    _next = super_iter.peek()
-                    if isinstance(super_iter.peek(), paragraph):
+                    try:
+                        _next = super_iter.peek()
+                    except StopIteration:
+                        break
+                    if isinstance(_next, paragraph):
                         # TODO: insert a line break into the text run...
                         run_iterator = iter(super_iter.__next__())
                     else:
