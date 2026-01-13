@@ -34,7 +34,7 @@ class el:  # noqa: N801
         if __props__:
             self.props = {}
             for prop in __props__:
-                self.props[prop] = getattr(x, prop)
+                self.props[prop] = getattr(x, prop, None)
 
     def to_json(
         self,
