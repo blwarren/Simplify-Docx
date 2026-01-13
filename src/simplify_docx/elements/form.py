@@ -50,15 +50,15 @@ class ffData(el):  # noqa: N801
         """Initialize form field data from an XML fragment."""
         super().__init__(x)
 
-        check_box = x.checkBox
+        check_box = getattr(x, "checkBox", None)
         if check_box is not None:
             self.check_box = checkBox(check_box)
 
-        drop_down = x.ddList
+        drop_down = getattr(x, "ddList", None)
         if drop_down is not None:
             self.dd_list = ddList(drop_down)
 
-        text_input = x.textInput
+        text_input = getattr(x, "textInput", None)
         if text_input is not None:
             self.text_input = textInput(text_input)
 
@@ -71,13 +71,13 @@ class ffData(el):  # noqa: N801
         """Coerce a form field data element to JSON."""
         out = super().to_json(doc, options, super_iter)
 
-        if self.fragment.checkBox is not None:
+        if getattr(self.fragment, "checkBox", None) is not None:
             out["checkBox"] = self.check_box.to_json(doc, options)
 
-        if self.fragment.ddList is not None:
+        if getattr(self.fragment, "ddList", None) is not None:
             out["ddList"] = self.dd_list.to_json(doc, options)
 
-        if self.fragment.textInput is not None:
+        if getattr(self.fragment, "textInput", None) is not None:
             out["textInput"] = self.text_input.to_json(doc, options)
 
         return out
@@ -104,14 +104,14 @@ class fldChar(el):  # noqa: N801
         self.status = "fieldCodes"
         self.field_codes = []
         self.field_results = []
-        ff_data = x.ffData
+        ff_data = getattr(x, "ffData", None)
         if ff_data is not None:
             self.ff_data = ffData(ff_data)
-            if x.ffData.checkBox is not None:
+            if getattr(x.ffData, "checkBox", None) is not None:
                 self.__type__ = "Checkbox"
-            elif x.ffData.ddList is not None:
+            elif getattr(x.ffData, "ddList", None) is not None:
                 self.__type__ = "DropDown"
-            elif x.ffData.textInput is not None:
+            elif getattr(x.ffData, "textInput", None) is not None:
                 self.__type__ = "TextInput"
             else:
                 warn("fldChar has unexpected ffData attribute: treating as generic-field", stacklevel=2)
