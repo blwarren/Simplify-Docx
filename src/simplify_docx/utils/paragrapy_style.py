@@ -15,9 +15,13 @@ def get_num_style(p: object, doc: object) -> object | None:
         np = doc.part.numbering_part
         # the map between numbering id and the numbering style
         num = np.element.find(f"w:num[@w:numId='{p.pPr.numPr.numId.val}']", np.element.nsmap)
+        if num is None or getattr(num, "abstractNumId", None) is None:
+            return None
         _path = f"w:abstractNum[@w:abstractNumId='{num.abstractNumId.val}']"
         # the numbering styles themselves
         abstract_numbering = np.element.find(_path, np.element.nsmap)
+        if abstract_numbering is None:
+            return None
         return abstract_numbering.find(f"w:lvl[@w:ilvl='{p.pPr.numPr.ilvl.val}']", np.element.nsmap)
     return None
 

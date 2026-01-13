@@ -141,7 +141,7 @@ class fldChar(el):  # noqa: N801
                 return out
 
             if options.get("simplify-checkbox", True):
-                del out["fldCharType"]
+                out.pop("fldCharType", None)
                 out["VALUE"] = value
                 _update_from(out, self.ff_data.check_box.props, ["default"])
                 return out
@@ -168,7 +168,7 @@ class fldChar(el):  # noqa: N801
                 return out
 
             if options.get("simplify-dropdown", True):
-                del out["fldCharType"]
+                out.pop("fldCharType", None)
                 out["VALUE"] = value
                 _update_from(
                     out,
@@ -195,7 +195,7 @@ class fldChar(el):  # noqa: N801
                 return out
 
             if options.get("simplify-textinput", True):
-                del out["fldCharType"]
+                out.pop("fldCharType", None)
                 if len(contents) > 1:
                     warn("Textinput has more than one element; ignoring all but the first element", stacklevel=2)
                 out["VALUE"] = contents[0]["VALUE"] if contents else ""
@@ -207,7 +207,7 @@ class fldChar(el):  # noqa: N801
             value = merge_run_contents(generic_contents, options)
             if options.get("flatten-generic-field", True):
                 out["VALUE"] = value
-                del out["fldCharType"]
+                out.pop("fldCharType", None)
                 return out
 
         resolved_contents = [elt.to_json(doc, options) for elt in self.field_results]
@@ -232,13 +232,14 @@ class fldChar(el):  # noqa: N801
             raise RuntimeError("Logic Error: Updating a completed field data")
 
         if isinstance(other, fldChar):
-            if other.props["fldCharType"] == "begin":
+            fld_char_type = other.props.get("fldCharType")
+            if fld_char_type == "begin":
                 raise RuntimeError("Unhandled nesting of data fields")
 
-            if other.props["fldCharType"] == "separate":
+            if fld_char_type == "separate":
                 self.status = "fieldResults"
                 return False
-            if other.props["fldCharType"] == "end":
+            if fld_char_type == "end":
                 self.status = "complete"
                 return True
 

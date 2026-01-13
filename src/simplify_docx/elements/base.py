@@ -2,6 +2,7 @@
 
 from collections.abc import Generator, Iterator, Sequence
 
+from docx.oxml.ns import qn
 from docx.oxml.shared import CT_DecimalNumber, CT_OnOff, CT_String
 from docx.shared import Twips
 
@@ -34,7 +35,10 @@ class el:  # noqa: N801
         if __props__:
             self.props = {}
             for prop in __props__:
-                self.props[prop] = getattr(x, prop, None)
+                value = getattr(x, prop, None)
+                if value is None and hasattr(x, "get"):
+                    value = x.get(qn(f"w:{prop}")) or x.get(prop)
+                self.props[prop] = value
 
     def to_json(
         self,

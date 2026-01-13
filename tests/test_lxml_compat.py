@@ -4,9 +4,12 @@ from __future__ import annotations
 
 import contextlib
 from collections.abc import Iterator
+from typing import ClassVar
 
+from docx.oxml.ns import qn
 from lxml import etree  # ty:ignore[unresolved-import]
 
+from simplify_docx.elements.base import el
 from simplify_docx.iterators import generic
 from simplify_docx.iterators.generic import build_iterators, register_iterator, skip_range, xml_iter
 from simplify_docx.utils.tag import get_attrs, get_tag
@@ -18,6 +21,13 @@ class DummyElement:
     def __init__(self, fragment: etree._Element) -> None:
         """Store the tag for validation in tests."""
         self.tag = fragment.tag
+
+
+class DummyProps(el):
+    """Element used to verify attribute extraction from lxml elements."""
+
+    __type__: ClassVar[str] = "dummy-props"
+    __props__: ClassVar[list[str]] = ["fldCharType"]
 
 
 @contextlib.contextmanager
@@ -88,3 +98,13 @@ def test_skip_range_finds_matching_end() -> None:
     result = skip_range(start, "id", "end")
     assert result is not None
     assert result is end
+
+
+def test_el_reads_namespaced_attributes_from_lxml() -> None:
+    """Element properties are extracted from namespaced lxml attributes."""
+    element = etree.Element(qn("w:fldChar"))
+    element.set(qn("w:fldCharType"), "begin")
+
+    dummy = DummyProps(element)
+
+    assert dummy.props["fldCharType"] == "begin"
