@@ -4,6 +4,8 @@ from collections.abc import Iterator, Sequence
 from typing import ClassVar
 from warnings import warn
 
+from docx.oxml.ns import qn
+
 from ..utils.paragrapy_style import get_paragraph_ind
 from . import container, el
 from .form import fldChar
@@ -157,6 +159,35 @@ class paragraph(EG_PContent):  # noqa: N801
             _indent = get_paragraph_ind(self.fragment, doc)
             if _indent is not None:
                 out["style"] = {"indent": indentation(_indent).to_json(doc, options)}
+
+        if getattr(self.fragment, "pPr", None) is not None and getattr(self.fragment.pPr, "pStyle", None) is not None:
+            p_style = self.fragment.pPr.pStyle
+            style_val = getattr(p_style, "val", None)
+            if style_val is None and hasattr(p_style, "get"):
+                style_val = p_style.get(qn("w:val")) or p_style.get("val")
+            if style_val:
+                out["style"] = out.get("style", {})
+                out["style"]["pStyle"] = style_val
+                style_elem = doc.styles.element.find(
+                    f"w:style[@w:styleId='{style_val}']",
+                    doc.styles.element.nsmap,
+                )
+                if style_elem is not None:
+                    name_elem = style_elem.find(qn("w:name"))
+                    if name_elem is not None:
+                        name_val = name_elem.get(qn("w:val"))
+                        if name_val:
+                            out["style"]["pStyleName"] = name_val
+                    ppr = style_elem.find(qn("w:pPr"))
+                    if ppr is not None:
+                        outline = ppr.find(qn("w:outlineLvl"))
+                        if outline is not None:
+                            outline_val = outline.get(qn("w:val"))
+                            if outline_val is not None:
+                                try:
+                                    out["style"]["outlineLvl"] = int(outline_val) + 1
+                                except ValueError:
+                                    pass
 
         if (
             options.get("include-paragraph-numbering", True)
