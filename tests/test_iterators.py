@@ -61,8 +61,8 @@ def test_xml_iter_skips_range_and_continues() -> None:
     with _clean_iterators():
         register_iterator(
             "skip_iter",
-            TAGS_TO_YIELD={"keep": DummyElement},
-            TAGS_TO_SKIP={"skipStart": ("id", "skipEnd")},
+            tags_to_yield={"keep": DummyElement},
+            tags_to_skip={"skipStart": ("id", "skipEnd")},
         )
         build_iterators()
 

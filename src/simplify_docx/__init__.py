@@ -4,13 +4,11 @@ Not thread safe! (but could be if build_iterators returned the built iterator
 definitions and passed them around...)
 """
 
-from typing import Any, Dict, Optional, Type, Union
-
 from .elements import document
 from .types.fragment import documentPart
 from .utils.friendly_names import apply_friendly_names
 from .utils.set_options import set_options as __set_options__
-from .utils.walk import walk
+from .utils.walk import walk as walk
 
 __version__ = "0.1.0"
 
@@ -18,10 +16,13 @@ __version__ = "0.1.0"
 # --------------------------------------------------
 # Main API
 # --------------------------------------------------
-def simplify(doc: documentPart, options: dict[str, Any] | None = None):
+type Options = dict[str, object]
+
+
+def simplify(doc: documentPart, options: Options | None = None) -> dict[str, object]:
     """Coerce Docx Documents to JSON."""
     # SET OPTIONS
-    _options: dict[str, Any]
+    _options: Options
     _options = dict(__default_options__, **options) if options else __default_options__
     __set_options__(_options)
 

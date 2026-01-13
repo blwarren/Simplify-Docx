@@ -1,8 +1,10 @@
 """Utilities for applying friendly names."""
 
+from collections.abc import Callable
 
-def apply_friendly_names(x: object) -> None:
-    """A utility function for applying friendly names to a simplified document."""
+
+def apply_friendly_names(x: dict[str, object]) -> None:
+    """Apply friendly names to a simplified document tree."""
     _walk(x, _apply_friendly_names)
 
 
@@ -32,13 +34,13 @@ __friendly_names__ = {
 }
 
 
-def _apply_friendly_names(x) -> None:
+def _apply_friendly_names(x: dict[str, object]) -> None:
     x["TYPE"] = __friendly_names__.get(x["TYPE"], x["TYPE"])
 
 
-def _walk(x, fun) -> None:
+def _walk(x: dict[str, object], fun: Callable[[dict[str, object]], None]) -> None:
     fun(x)
-    val = x.get("VALUE", None)
+    val = x.get("VALUE")
     if not val:
         return
     if isinstance(val, dict) and val.get("TYPE", None):

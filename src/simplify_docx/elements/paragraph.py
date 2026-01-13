@@ -1,7 +1,7 @@
 """Elements which inherit from EG_PContent."""
 
 from collections.abc import Iterator, Sequence
-from typing import Any
+from typing import ClassVar
 from warnings import warn
 
 from ..utils.paragrapy_style import get_paragraph_ind
@@ -9,39 +9,44 @@ from . import container, el
 from .form import fldChar
 
 
-class EG_PContent(container):
+class EG_PContent(container):  # noqa: N801
     """Base class for elements which with  EG_PContent."""
 
-    def to_json(self, doc, options: dict[str, str], super_iter: Iterator | None = None) -> dict[str, Any]:
-        _fldChar = None
-        _fldChar: fldChar | None
-        bare_contents = []
+    def to_json(  # noqa: PLR0912
+        self,
+        doc: object,
+        options: dict[str, object],
+        super_iter: Iterator | None = None,
+    ) -> dict[str, object]:
+        """Coerce a paragraph-content element to JSON."""
+        fld_char: fldChar | None = None
+        bare_contents: list[dict[str, object]] = []
 
         run_iterator = iter(self)
         while True:
             # ITERATE OVER THE PARAGRAPH CONTENTS
             for elt in run_iterator:
-                if _fldChar is not None:
-                    finished: bool = _fldChar.update(elt)
+                if fld_char is not None:
+                    finished: bool = fld_char.update(elt)
                     if finished:
-                        _fldchar_json = _fldChar.to_json(doc, options)
+                        fld_char_json = fld_char.to_json(doc, options)
 
-                        if _fldchar_json.get("TYPE", None) == "generic-field" and options.get(
+                        if fld_char_json.get("TYPE", None) == "generic-field" and options.get(
                             "flatten-generic-field", True
                         ):
-                            bare_contents.extend(_fldchar_json.get("VALUE", []))
+                            bare_contents.extend(fld_char_json.get("VALUE", []))
                         else:
-                            bare_contents.append(_fldchar_json)
-                        _fldChar = None
+                            bare_contents.append(fld_char_json)
+                        fld_char = None
                     continue
 
                 if isinstance(elt, fldChar):
-                    _fldChar = elt
+                    fld_char = elt
                     continue
 
                 bare_contents.append(elt.to_json(doc, options))
 
-            if _fldChar is not None:
+            if fld_char is not None:
                 # THE PARAGRAPH ENDED IN AN INCOMPLETE FORM-FIELD
                 if options.get("greedy-text-input", True):
                     _next = super_iter.peek()
@@ -67,10 +72,10 @@ class EG_PContent(container):
         return {"TYPE": self.__type__, "VALUE": contents}
 
 
-def merge_run_contents(x: Sequence[dict[str, Any]], options: dict[str, str]):
+def merge_run_contents(x: Sequence[dict[str, object]], options: dict[str, object]) -> list[dict[str, object]]:
     """Merge a series of run contents as appropriate."""
-    out: list[dict[str, Any]] = []
-    prev_data: dict[str, Any] | None = None
+    out: list[dict[str, object]] = []
+    prev_data: dict[str, object] | None = None
     for data in x:
         if options.get("ignore-empty-text", True) and data["TYPE"] == "CT_Text" and not data["VALUE"]:
             continue
@@ -94,32 +99,37 @@ def merge_run_contents(x: Sequence[dict[str, Any]], options: dict[str, str]):
     return out
 
 
-class numPr(el):
+class numPr(el):  # noqa: N801
     """The paragraph numbering property."""
 
-    __type__ = "numPr"
-    __props__ = ["ilvl", "numId"]
+    __type__: ClassVar[str] = "numPr"
+    __props__: ClassVar[Sequence[str]] = ["ilvl", "numId"]
 
 
-class indentation(el):
+class indentation(el):  # noqa: N801
     """``<w:ind>`` element, specifying paragraph indentation."""
 
-    __type__ = "CT_Ind"
-    __props__ = ["left", "right", "firstLine", "hanging"]
+    __type__: ClassVar[str] = "CT_Ind"
+    __props__: ClassVar[Sequence[str]] = ["left", "right", "firstLine", "hanging"]
 
 
-class paragraph(EG_PContent):
+class paragraph(EG_PContent):  # noqa: N801
     """Represents a simple paragraph."""
 
-    __name__ = "CT_P"
-    __type__ = "CT_P"
+    __name__: ClassVar[str] = "CT_P"
+    __type__: ClassVar[str] = "CT_P"
 
-    def to_json(self, doc, options: dict[str, str], super_iter: Iterator | None = None) -> dict[str, Any]:
+    def to_json(
+        self,
+        doc: object,
+        options: dict[str, object],
+        super_iter: Iterator | None = None,
+    ) -> dict[str, object]:
         """Coerce a container object to JSON."""
-        out: dict[str, Any] = super().to_json(doc, options, super_iter)
+        out: dict[str, object] = super().to_json(doc, options, super_iter)
 
         if options.get("remove-leading-white-space", True):
-            children: list[dict[str, Any]] = out["VALUE"]
+            children: list[dict[str, object]] = out["VALUE"]
             while children:
                 if children[0]["TYPE"] != "CT_Text":
                     break
@@ -156,31 +166,31 @@ class paragraph(EG_PContent):
         return out
 
 
-class hyperlink(EG_PContent):
+class hyperlink(EG_PContent):  # noqa: N801
     """The hyperlink element."""
 
-    __type__ = "CT_Hyperlink"
-    __props__ = ["anchor", "docLocatoin", "history", "id", "tgtFrame", "tooltip"]
+    __type__: ClassVar[str] = "CT_Hyperlink"
+    __props__: ClassVar[Sequence[str]] = ["anchor", "docLocatoin", "history", "id", "tgtFrame", "tooltip"]
 
 
-class fldSimple(EG_PContent):
+class fldSimple(EG_PContent):  # noqa: N801
     """The SimpleField element."""
 
-    __type__ = "CT_SimpleField"
-    __props__ = ["instr", "fldLock", "dirty"]
+    __type__: ClassVar[str] = "CT_SimpleField"
+    __props__: ClassVar[Sequence[str]] = ["instr", "fldLock", "dirty"]
 
 
-class customXml(container):
+class customXml(container):  # noqa: N801
     """The customXml element."""
 
-    __name__ = "CustomXmlRun"
-    __type__ = "CT_CustomXmlRun"
-    __props__ = ["element"]
+    __name__: ClassVar[str] = "CustomXmlRun"
+    __type__: ClassVar[str] = "CT_CustomXmlRun"
+    __props__: ClassVar[Sequence[str]] = ["element"]
 
 
-class smartTag(container):
+class smartTag(container):  # noqa: N801
     """The smartTag element."""
 
-    __name__ = "CT_SmartTagRun"
-    __type__ = "EG_PContent"
-    __props__ = ["element", "uri"]
+    __name__: ClassVar[str] = "CT_SmartTagRun"
+    __type__: ClassVar[str] = "EG_PContent"
+    __props__: ClassVar[Sequence[str]] = ["element", "uri"]

@@ -1,7 +1,7 @@
 """Form Field Data."""
 
 from collections.abc import Iterator, Sequence
-from typing import Any
+from typing import ClassVar
 from warnings import warn
 
 from ..types import xmlFragment
@@ -9,31 +9,31 @@ from . import el
 from .base import get_val
 
 
-class checkBox(el):
+class checkBox(el):  # noqa: N801
     """The ffData checkBox attribute."""
 
-    __type__ = "CT_FFCheckBox"
-    __props__ = ["default", "checked"]
+    __type__: ClassVar[str] = "CT_FFCheckBox"
+    __props__: ClassVar[Sequence[str]] = ["default", "checked"]
 
 
-class ddList(el):
+class ddList(el):  # noqa: N801
     """The ffData ddList attribute."""
 
-    __type__ = "CT_FFDDList"
-    __props__ = ["default", "result", "listEntry_lst"]
+    __type__: ClassVar[str] = "CT_FFDDList"
+    __props__: ClassVar[Sequence[str]] = ["default", "result", "listEntry_lst"]
 
 
-class textInput(el):
+class textInput(el):  # noqa: N801
     """The ffData textInput attribute."""
 
-    __type__ = "CT_FFTextInput"
-    __props__ = ["default", "type_", "format_"]
+    __type__: ClassVar[str] = "CT_FFTextInput"
+    __props__: ClassVar[Sequence[str]] = ["default", "type_", "format_"]
 
 
-class ffData(el):
+class ffData(el):  # noqa: N801
     """The ffData element."""
 
-    __props__ = [
+    __props__: ClassVar[Sequence[str]] = [
         "name",
         "label",
         "tabIndex",
@@ -44,63 +44,69 @@ class ffData(el):
         "helpText",
         "statusText",
     ]
-    __type__: str = "CT_FFData"
+    __type__: ClassVar[str] = "CT_FFData"
 
     def __init__(self, x: xmlFragment) -> None:
+        """Initialize form field data from an XML fragment."""
         super().__init__(x)
 
-        _checkBox = x.checkBox
-        if _checkBox is not None:
-            self.checkBox = checkBox(_checkBox)
+        check_box = x.checkBox
+        if check_box is not None:
+            self.check_box = checkBox(check_box)
 
-        _ddList = x.ddList
-        if _ddList is not None:
-            self.ddList = ddList(_ddList)
+        drop_down = x.ddList
+        if drop_down is not None:
+            self.dd_list = ddList(drop_down)
 
-        _textInput = x.textInput
-        if _textInput is not None:
-            self.textInput = textInput(_textInput)
+        text_input = x.textInput
+        if text_input is not None:
+            self.text_input = textInput(text_input)
 
-    def to_json(self, doc, options, super_iter: Iterator | None = None):
+    def to_json(
+        self,
+        doc: object,
+        options: dict[str, object],
+        super_iter: Iterator | None = None,
+    ) -> dict[str, object]:
+        """Coerce a form field data element to JSON."""
         out = super().to_json(doc, options, super_iter)
 
         if self.fragment.checkBox is not None:
-            out["checkBox"] = self.checkBox.to_json(doc, options)
+            out["checkBox"] = self.check_box.to_json(doc, options)
 
         if self.fragment.ddList is not None:
-            out["ddList"] = self.ddList.to_json(doc, options)
+            out["ddList"] = self.dd_list.to_json(doc, options)
 
         if self.fragment.textInput is not None:
-            out["textInput"] = self.textInput.to_json(doc, options)
+            out["textInput"] = self.text_input.to_json(doc, options)
 
         return out
 
-    def field_results(self):
+    def field_results(self) -> xmlFragment:
         """Extract the field results elements."""
         return self.fragment
 
 
-class fldChar(el):
+class fldChar(el):  # noqa: N801
     """Form Field Data."""
 
-    __type__: str = "fldChar"
-    __props__ = ["fldCharType", "fldLock", "dirty"]
+    __type__: ClassVar[str] = "fldChar"
+    __props__: ClassVar[Sequence[str]] = ["fldCharType", "fldLock", "dirty"]
 
-    fieldCodes: Sequence[el]
-    fieldResults: Sequence[el]
-    ffData: ffData | None
+    field_codes: Sequence[el]
+    field_results: Sequence[el]
+    ff_data: ffData | None
 
     def __init__(self, x: xmlFragment) -> None:
+        """Initialize the form field character from XML."""
         super().__init__(x)
 
         self.status = "fieldCodes"
-        self.fieldCodes = []
-        self.fieldResults = []
-        self._ffData = x.ffData
-
-        _ffData = x.ffData
-        if _ffData is not None:
-            self.ffData = ffData(_ffData)
+        self.field_codes = []
+        self.field_results = []
+        ff_data = x.ffData
+        if ff_data is not None:
+            self.ff_data = ffData(ff_data)
             if x.ffData.checkBox is not None:
                 self.__type__ = "Checkbox"
             elif x.ffData.ddList is not None:
@@ -111,19 +117,23 @@ class fldChar(el):
                 warn("fldChar has unexpected ffData attribute: treating as generic-field", stacklevel=2)
                 self.__type__ = "generic-field"
         else:
-            self.ffData = None
+            self.ff_data = None
             self.__type__ = "generic-field"
 
-    def to_json(  # pylint: disable=too-many-branches, too-many-return-statements, too-many-statements
-        self, doc, options: dict[str, str], super_iter: Iterator | None = None
-    ) -> dict[str, Any]:
+    def to_json(  # noqa: PLR0911, PLR0912, PLR0915
+        self,
+        doc: object,
+        options: dict[str, object],
+        super_iter: Iterator | None = None,
+    ) -> dict[str, object]:
+        """Coerce a form field character element to JSON."""
         out = super().to_json(doc, options, super_iter)
-        from .paragraph import merge_run_contents
+        from .paragraph import merge_run_contents  # noqa: PLC0415
 
         if self.__type__ == "Checkbox":
-            checked = self.ffData.checkBox.props["checked"]
+            checked = self.ff_data.check_box.props["checked"]
             if checked is None and options.get("use-checkbox-default", True):
-                checked = self.ffData.checkBox.props["default"]
+                checked = self.ff_data.check_box.props["default"]
             value = None if checked is None else checked.val
 
             if options.get("checkbox-as-text", False):
@@ -133,25 +143,25 @@ class fldChar(el):
             if options.get("simplify-checkbox", True):
                 del out["fldCharType"]
                 out["VALUE"] = value
-                _update_from(out, self.ffData.checkBox.props, ["default"])
+                _update_from(out, self.ff_data.check_box.props, ["default"])
                 return out
 
         elif self.__type__ == "DropDown":
-            _values = self.ffData.ddList.props["listEntry_lst"]
+            values = self.ff_data.dd_list.props["listEntry_lst"]
 
             if options.get("trim-dropdown-options", True):
-                for _value in _values:
-                    _value.val = _value.val.strip()
+                for option in values:
+                    option.val = option.val.strip()
 
-            if not _values:
+            if not values:
                 value = None
             else:
-                _result = self.ffData.ddList.props["result"]
-                _default = self.ffData.ddList.props["default"]
-                if _result is None:
-                    value = _values[0].val if _default is None else _values[_default.val].val
+                result = self.ff_data.dd_list.props["result"]
+                default = self.ff_data.dd_list.props["default"]
+                if result is None:
+                    value = values[0].val if default is None else values[default.val].val
                 else:
-                    value = _values[_result.val].val
+                    value = values[result.val].val
 
             if options.get("dropdown-as-text", False):
                 out.update({"TYPE": "CT_Text", "VALUE": f"[{self.__type__}:{value}]"})
@@ -162,15 +172,15 @@ class fldChar(el):
                 out["VALUE"] = value
                 _update_from(
                     out,
-                    self.ffData.ddList.props,
+                    self.ff_data.dd_list.props,
                     ["default", "result", "listEntry_lst"],
                 )
                 out["options"] = out.pop("listEntry_lst")
                 return out
 
         elif self.__type__ == "TextInput":
-            _contents = [elt.to_json(doc, options) for elt in self.fieldResults]
-            contents = merge_run_contents(_contents, options)
+            text_contents = [elt.to_json(doc, options) for elt in self.field_results]
+            contents = merge_run_contents(text_contents, options)
             value = contents[0]["VALUE"] if len(contents) == 1 else contents
 
             if options.get("textinput-as-text", False):
@@ -189,26 +199,26 @@ class fldChar(el):
                 if len(contents) > 1:
                     warn("Textinput has more than one element; ignoring all but the first element", stacklevel=2)
                 out["VALUE"] = contents[0]["VALUE"] if contents else ""
-                _update_from(out, self.ffData.textInput.props, ["default"])
+                _update_from(out, self.ff_data.text_input.props, ["default"])
                 return out
 
         else:
-            _contents = [elt.to_json(doc, options) for elt in self.fieldResults]
-            value = merge_run_contents(_contents, options)
+            generic_contents = [elt.to_json(doc, options) for elt in self.field_results]
+            value = merge_run_contents(generic_contents, options)
             if options.get("flatten-generic-field", True):
                 out["VALUE"] = value
                 del out["fldCharType"]
                 return out
 
-        _contents = [elt.to_json(doc, options) for elt in self.fieldResults]
-        contents = merge_run_contents(_contents, options)
-        codes = [elt.to_json(doc, options) for elt in self.fieldCodes]
+        resolved_contents = [elt.to_json(doc, options) for elt in self.field_results]
+        contents = merge_run_contents(resolved_contents, options)
+        codes = [elt.to_json(doc, options) for elt in self.field_codes]
 
         out.update(
             {
                 "TYPE": self.__type__,
                 "VALUE": value,
-                "ffData": self.ffData.to_json(doc, options),
+                "ffData": self.ff_data.to_json(doc, options),
                 "fieldCodes": codes,
                 "fieldResults": contents,
             }
@@ -233,14 +243,14 @@ class fldChar(el):
                 return True
 
         if self.status == "fieldResults":
-            self.fieldResults.append(other)
+            self.field_results.append(other)
         else:
-            self.fieldCodes.append(other)
+            self.field_codes.append(other)
         return False
 
 
-def _update_from(x: dict[str, Any], y: dict[str, Any], attrs: Sequence[str]) -> None:
-    """A utility function for copying attributes from one object to another."""
+def _update_from(x: dict[str, object], y: dict[str, object], attrs: Sequence[str]) -> None:
+    """Copy attributes from one object to another."""
     for attr in attrs:
         val = y.get(attr)
         if val is not None:

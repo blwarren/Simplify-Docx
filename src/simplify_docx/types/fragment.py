@@ -1,5 +1,7 @@
 """Abstract classes for typing purposes only."""
 
+# ruff: noqa: D101, D102, N801, N815
+
 # pylint: disable=no-self-use,pointless-statement,missing-docstring,invalid-name, too-few-public-methods
 from __future__ import annotations
 

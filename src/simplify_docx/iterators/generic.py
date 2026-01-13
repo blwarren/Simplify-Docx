@@ -32,25 +32,25 @@ __definitions__: dict[str, ElementHandlers] = {}
 __built__: dict[str, ElementHandlers] = {}
 
 
-def register_iterator(
+def register_iterator(  # noqa: PLR0913
     name: str,
-    TAGS_TO_YIELD: dict[str, type[el]] | None = None,
-    TAGS_TO_NEST: dict[str, str] | None = None,
-    TAGS_TO_IGNORE: Sequence[str] | None = None,
-    TAGS_TO_WARN: dict[str, str] | None = None,
-    TAGS_TO_SKIP: dict[str, tuple[str, str]] | None = None,
+    tags_to_yield: dict[str, type[el]] | None = None,
+    tags_to_nest: dict[str, str] | None = None,
+    tags_to_ignore: Sequence[str] | None = None,
+    tags_to_warn: dict[str, str] | None = None,
+    tags_to_skip: dict[str, tuple[str, str]] | None = None,
     extends: Sequence[str] | None = None,
     check_name: bool = True,
 ) -> None:
-    """An opinionated iterator which ignores deleted and moved resources, and
-    passes through in-line revision containers such as InsertedRun, and
-    orientation elements like bookmarks, comments, and permissions.
+    """Register an iterator that skips deleted/moved resources and revision containers.
+
+    This configuration also ignores orientation elements like bookmarks, comments, and permissions.
     """
     if check_name and name in __definitions__:
         raise ValueError(f"iterator named '{name}' already registered")
 
     __definitions__[name] = ElementHandlers(
-        TAGS_TO_YIELD, TAGS_TO_NEST, TAGS_TO_IGNORE, TAGS_TO_WARN, TAGS_TO_SKIP, extends=extends
+        tags_to_yield, tags_to_nest, tags_to_ignore, tags_to_warn, tags_to_skip, extends=extends
     )
 
 
@@ -68,37 +68,37 @@ def build_iterators() -> None:
             _resovled.append(x)
             return
 
-        TAGS_TO_YIELD = dict(xdef.TAGS_TO_YIELD) if xdef.TAGS_TO_YIELD else {}
-        TAGS_TO_NEST = dict(xdef.TAGS_TO_NEST) if xdef.TAGS_TO_NEST else {}
-        TAGS_TO_IGNORE = list(xdef.TAGS_TO_IGNORE) if xdef.TAGS_TO_IGNORE else []
-        TAGS_TO_WARN = dict(xdef.TAGS_TO_WARN) if xdef.TAGS_TO_WARN else {}
-        TAGS_TO_SKIP = dict(xdef.TAGS_TO_SKIP) if xdef.TAGS_TO_SKIP else {}
+        tags_to_yield = dict(xdef.TAGS_TO_YIELD) if xdef.TAGS_TO_YIELD else {}
+        tags_to_nest = dict(xdef.TAGS_TO_NEST) if xdef.TAGS_TO_NEST else {}
+        tags_to_ignore = list(xdef.TAGS_TO_IGNORE) if xdef.TAGS_TO_IGNORE else []
+        tags_to_warn = dict(xdef.TAGS_TO_WARN) if xdef.TAGS_TO_WARN else {}
+        tags_to_skip = dict(xdef.TAGS_TO_SKIP) if xdef.TAGS_TO_SKIP else {}
 
         for dependency in xdef.extends:
             try:
                 _resolve(dependency)
-            except KeyError:
+            except KeyError as err:
                 msg = f"Iterator for '{x}' depends on undefined group '{dependency}'"
-                raise RuntimeError(msg)
+                raise RuntimeError(msg) from err
 
             ddef = __built__[dependency]
             if ddef.TAGS_TO_YIELD:
-                TAGS_TO_YIELD.update(ddef.TAGS_TO_YIELD)
+                tags_to_yield.update(ddef.TAGS_TO_YIELD)
             if ddef.TAGS_TO_NEST:
-                TAGS_TO_NEST.update(ddef.TAGS_TO_NEST)
+                tags_to_nest.update(ddef.TAGS_TO_NEST)
             if ddef.TAGS_TO_IGNORE:
-                TAGS_TO_IGNORE.extend(ddef.TAGS_TO_IGNORE)
+                tags_to_ignore.extend(ddef.TAGS_TO_IGNORE)
             if ddef.TAGS_TO_WARN:
-                TAGS_TO_WARN.update(ddef.TAGS_TO_WARN)
+                tags_to_warn.update(ddef.TAGS_TO_WARN)
             if ddef.TAGS_TO_SKIP:
-                TAGS_TO_SKIP.update(ddef.TAGS_TO_SKIP)
+                tags_to_skip.update(ddef.TAGS_TO_SKIP)
 
         __built__[x] = ElementHandlers(
-            TAGS_TO_YIELD=TAGS_TO_YIELD,
-            TAGS_TO_NEST=TAGS_TO_NEST,
-            TAGS_TO_IGNORE=TAGS_TO_IGNORE,
-            TAGS_TO_WARN=TAGS_TO_WARN,
-            TAGS_TO_SKIP=TAGS_TO_SKIP,
+            TAGS_TO_YIELD=tags_to_yield,
+            TAGS_TO_NEST=tags_to_nest,
+            TAGS_TO_IGNORE=tags_to_ignore,
+            TAGS_TO_WARN=tags_to_warn,
+            TAGS_TO_SKIP=tags_to_skip,
         )
 
         _resovled.append(x)
@@ -107,8 +107,8 @@ def build_iterators() -> None:
         _resolve(name)
 
 
-def xml_iter(p: xmlFragment, name: str, msg: str | None = None) -> Generator[el]:
-    """Iterates over an XML node yielding an appropriate element (el)."""
+def xml_iter(p: xmlFragment, name: str, msg: str | None = None) -> Generator[el]:  # noqa: PLR0912
+    """Iterate over an XML node yielding an appropriate element (el)."""
     handlers = __built__[name]
 
     # INIT PHASE
@@ -162,7 +162,7 @@ def xml_iter(p: xmlFragment, name: str, msg: str | None = None) -> Generator[el]
 
 
 def skip_range(x: xmlFragment, id_attr: str, waitfor: str) -> xmlFragment | None:
-    """A utility which returns the element at the end of the range."""
+    """Return the element at the end of the range."""
     _id: str = x.attrib[id_attr]
     current: xmlFragment | None = x.getnext()
 

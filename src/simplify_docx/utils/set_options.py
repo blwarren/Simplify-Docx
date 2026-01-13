@@ -8,64 +8,64 @@ from ..iterators.generic import build_iterators, register_iterator
 
 def set_options(options: dict[str, str | bool | int | float]) -> None:
     """Register iterators depending on the selected options."""
-    __set_EG_PContents__(options)
-    __set_EG_ContentRunContents__(options)
+    _set_eg_p_contents(options)
+    _set_eg_content_run_contents(options)
     build_iterators()
 
 
-def __set_EG_PContents__(options: dict[str, str | bool | int | float]) -> None:
+def _set_eg_p_contents(options: dict[str, str | bool | int | float]) -> None:
     """group:"EG_PContent"."""
-    TAGS_TO_YIELD: dict[str, type[el]] = {qn("w:subDoc"): subDoc}
+    tags_to_yield: dict[str, type[el]] = {qn("w:subDoc"): subDoc}
 
-    TAGS_TO_NEST: dict[str, str] = {qn("w:r"): "CT_R"}
+    tags_to_nest: dict[str, str] = {qn("w:r"): "CT_R"}
 
     # -----------------------------------------------
     if options["flatten-simpleField"]:
-        TAGS_TO_NEST[qn("w:fldSimple")] = "EG_PContent"
+        tags_to_nest[qn("w:fldSimple")] = "EG_PContent"
     else:
-        TAGS_TO_YIELD[qn("w:fldSimple")] = fldSimple
+        tags_to_yield[qn("w:fldSimple")] = fldSimple
 
     # -----------------------------------------------
     if options["flatten-hyperlink"]:
-        TAGS_TO_NEST[qn("w:hyperlink")] = "EG_PContent"
+        tags_to_nest[qn("w:hyperlink")] = "EG_PContent"
     else:
-        TAGS_TO_YIELD[qn("w:hyperlink")] = hyperlink
+        tags_to_yield[qn("w:hyperlink")] = hyperlink
 
     # -----------------------------------------------
     register_iterator(
         "EG_PContent",
-        TAGS_TO_YIELD=TAGS_TO_YIELD,
-        TAGS_TO_NEST=TAGS_TO_NEST,
-        TAGS_TO_IGNORE=[qn("w:customXmlPr"), qn("w:smartTagPr")],
+        tags_to_yield=tags_to_yield,
+        tags_to_nest=tags_to_nest,
+        tags_to_ignore=[qn("w:customXmlPr"), qn("w:smartTagPr")],
         extends=["EG_RunLevelElts"],
         check_name=False,
     )
 
 
-def __set_EG_ContentRunContents__(options: dict[str, str | bool | int | float]) -> None:
+def _set_eg_content_run_contents(options: dict[str, str | bool | int | float]) -> None:
     """group: EG_ContentRunContent."""
-    TAGS_TO_YIELD: dict[str, type[el]] = {qn("w:sdt"): empty}
+    tags_to_yield: dict[str, type[el]] = {qn("w:sdt"): empty}
 
-    TAGS_TO_NEST: dict[str, str] = {qn("w:r"): "CT_R"}
+    tags_to_nest: dict[str, str] = {qn("w:r"): "CT_R"}
 
     # -----------------------------------------------
     if options["flatten-smartTag"]:
-        TAGS_TO_NEST[qn("w:smartTag")] = "EG_PContent"
+        tags_to_nest[qn("w:smartTag")] = "EG_PContent"
     else:
-        TAGS_TO_YIELD[qn("w:smartTag")] = empty
+        tags_to_yield[qn("w:smartTag")] = empty
 
     # -----------------------------------------------
     if options["flatten-customXml"]:
-        TAGS_TO_NEST[qn("w:customXml")] = "EG_PContent"
+        tags_to_nest[qn("w:customXml")] = "EG_PContent"
     else:
-        TAGS_TO_YIELD[qn("w:customXml")] = customXml
+        tags_to_yield[qn("w:customXml")] = customXml
 
     # -----------------------------------------------
     register_iterator(
         "EG_ContentRunContents",
-        TAGS_TO_YIELD=TAGS_TO_YIELD,
-        TAGS_TO_NEST=TAGS_TO_NEST,
-        TAGS_TO_WARN={
+        tags_to_yield=tags_to_yield,
+        tags_to_nest=tags_to_nest,
+        tags_to_warn={
             qn("w:dir"): "Ignoring text-direction tags",
             qn("w:bdo"): "Ignoring text-direction tags",
         },

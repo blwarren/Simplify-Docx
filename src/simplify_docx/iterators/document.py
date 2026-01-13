@@ -7,6 +7,6 @@ from .generic import register_iterator
 
 register_iterator(
     "CT_Document",
-    TAGS_TO_YIELD={qn("w:body"): body},
-    TAGS_TO_IGNORE=[qn("w:docPartPr")],
+    tags_to_yield={qn("w:body"): body},
+    tags_to_ignore=[qn("w:docPartPr")],
 )

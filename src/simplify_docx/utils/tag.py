@@ -27,7 +27,7 @@ def get_attrs(el: xmlFragment, attrs: Sequence[str]) -> dict[str, str]:
     return out
 
 
-def get_tag(element: xmlFragment, nsdict=None) -> Tag:
+def get_tag(element: xmlFragment, nsdict: dict[str, str] | None = None) -> Tag:
     """Extract parts of the tag (this is essentially the reverse of `qn()`)."""
     ns_names: dict[str, str]
     ns_names = NS_NAMES if nsdict is None else dict(zip(nsdict.values(), nsdict.keys(), strict=False))

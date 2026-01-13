@@ -15,3 +15,32 @@ from .paragraph import (
 )
 from .run_contents import SymbolChar, empty, simpleTextElement, text
 from .table import table, tc, tr
+
+__all__ = [
+    "EG_PContent",
+    "IncompatibleTypeError",
+    "SymbolChar",
+    "altChunk",
+    "body",
+    "checkBox",
+    "container",
+    "contentPart",
+    "customXml",
+    "ddList",
+    "document",
+    "el",
+    "empty",
+    "ffData",
+    "fldChar",
+    "fldSimple",
+    "hyperlink",
+    "paragraph",
+    "simpleTextElement",
+    "smartTag",
+    "subDoc",
+    "table",
+    "tc",
+    "text",
+    "textInput",
+    "tr",
+]

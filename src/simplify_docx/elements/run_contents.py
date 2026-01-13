@@ -2,7 +2,7 @@
 
 import re
 from collections.abc import Iterator
-from typing import Any
+from typing import ClassVar
 
 from docx.oxml.ns import qn
 
@@ -12,16 +12,22 @@ from . import el  # , IncompatibleTypeError
 RE_SPACES = re.compile("  +", re.IGNORECASE)
 
 
-class empty(el):
+class empty(el):  # noqa: N801
     """Generic for CT_Empty elements."""
 
     __type__: str
 
     def __init__(self, x: xmlFragment) -> None:
+        """Initialize an empty element from XML."""
         super().__init__(x)
         self.__type__ = x.tag.split("}")[-1]
 
-    def to_json(self, doc, options: dict[str, str], super_iter: Iterator | None = None) -> dict[str, Any]:  # pylint: disable=unused-argument
+    def to_json(
+        self,
+        _doc: object,
+        options: dict[str, object],
+        _super_iter: Iterator | None = None,
+    ) -> dict[str, object]:
         """Coerce an object to JSON."""
         if options.get("empty-as-text", False):
             return {"TYPE": "CT_Text", "VALUE": f"[w:{self.__type__}]"}
@@ -37,13 +43,14 @@ default_text_options = {
 }
 
 
-class text(el):
+class text(el):  # noqa: N801
     """A Text element."""
 
     __type__: str
     value: str
 
     def __init__(self, x: xmlFragment) -> None:
+        """Initialize the text element from XML."""
         super().__init__(x)
         self.__type__ = x.tag.split("}")[-1]
         if x.text is None:
@@ -51,7 +58,12 @@ class text(el):
         else:
             self.value = x.text
 
-    def to_json(self, doc, options: dict[str, str], super_iter: Iterator | None = None) -> dict[str, Any]:  # pylint: disable=unused-argument
+    def to_json(
+        self,
+        _doc: object,
+        options: dict[str, object],
+        _super_iter: Iterator | None = None,
+    ) -> dict[str, object]:
         """Coerce an object to JSON."""
         _value = self.value
         if options.get("dumb-quotes", True):
@@ -103,20 +115,27 @@ class text(el):
 
 
 class SymbolChar(el):
-    """The SymbolChar element. Even though this is basically a test element,
-    it's an element in which the font is significant.
+    """Represent a symbol character element.
+
+    The font matters for rendering even though the element is text-like.
     """
 
-    __type__ = "SymbolChar"
+    __type__: ClassVar[str] = "SymbolChar"
     char: str
     font: str
 
-    def __init__(self, x) -> None:
+    def __init__(self, x: xmlFragment) -> None:
+        """Initialize the symbol character element from XML."""
         super().__init__(x)
         self.char = x.get(qn("w:char"))
         self.font = x.get(qn("w:font"))
 
-    def to_json(self, doc, options: dict[str, str], super_iter: Iterator | None = None) -> dict[str, Any]:  # pylint: disable=unused-argument
+    def to_json(
+        self,
+        _doc: object,
+        options: dict[str, object],
+        _super_iter: Iterator | None = None,
+    ) -> dict[str, object]:
         """Coerce an object to JSON."""
         if options.get("symbol-as-text", True):
             return {"TYPE": "CT_Text", "VALUE": self.char}
@@ -124,7 +143,7 @@ class SymbolChar(el):
         return {"TYPE": self.__type__, "VALUE": {"char": self.char, "font": self.font}}
 
 
-simpleTextElementText = {
+simple_text_element_text = {
     "CarriageReturn": "\r",
     "Break": "\r",
     "TabChar": "\t",
@@ -134,7 +153,7 @@ simpleTextElementText = {
 }
 
 
-tagToTypeMap: dict[str, str] = {
+tag_to_type_map: dict[str, str] = {
     qn("w:br"): "Break",
     qn("w:cr"): "CarriageReturn",
     qn("w:tab"): "TabChar",
@@ -144,15 +163,22 @@ tagToTypeMap: dict[str, str] = {
 }
 
 
-class simpleTextElement(el):
+class simpleTextElement(el):  # noqa: N801
     """A simple text element represented by a CT_Empty."""
 
     def __init__(self, x: xmlFragment) -> None:
+        """Initialize the simple text element from XML."""
         super().__init__(x)
-        self.__type__ = tagToTypeMap[x.tag]
+        self.__type__ = tag_to_type_map[x.tag]
 
-    def to_json(self, doc, options=None, super_iter: Iterator | None = None):
+    def to_json(
+        self,
+        _doc: object,
+        options: dict[str, object],
+        _super_iter: Iterator | None = None,
+    ) -> dict[str, object]:
+        """Coerce a simple text element to JSON."""
         if options.get("special-characters-as-text", True):
-            return {"TYPE": "CT_Text", "VALUE": simpleTextElementText[self.__type__]}
+            return {"TYPE": "CT_Text", "VALUE": simple_text_element_text[self.__type__]}
 
         return {"TYPE": self.__type__}

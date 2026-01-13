@@ -1,51 +1,53 @@
 """The body element."""
 
 from collections.abc import Iterator
-from typing import Any
 
 from .base import container
 
 
-class document(container):
+class document(container):  # noqa: N801
     """A document body element."""
 
     __type__ = "CT_Document"
 
 
-class CT_Rel(container):
+class CT_Rel(container):  # noqa: N801
     """A document body element."""
 
     __type__ = "CT_Rel"
     __name__ = "CT_Rel"
 
     def to_json(
-        self, doc, options: dict[str, str] | None = None, super_iter: Iterator | None = None
-    ) -> dict[str, Any]:
+        self,
+        doc: object,
+        options: dict[str, object] | None = None,
+        _super_iter: Iterator | None = None,
+    ) -> dict[str, object]:
         """Coerce a container object to JSON."""
-        chunkId = self.fragment.rId
-        chunkPart = doc.part.related_parts[chunkId]
-        chunkDoc = chunkPart.element
-        chunkDoc.element.body.getchildren()
+        chunk_id = self.fragment.rId
+        chunk_part = doc.part.related_parts[chunk_id]
+        chunk_doc = chunk_part.element
+        chunk_doc.element.body.getchildren()
 
         return {
             "TYPE": self.__name__,
-            "VALUE": document(chunkPart.element.element).to_json(chunkDoc, options),
+            "VALUE": document(chunk_part.element.element).to_json(chunk_doc, options),
         }
 
 
-class subDoc(CT_Rel):
+class subDoc(CT_Rel):  # noqa: N801
     """A nested sub-document."""
 
     __name__ = "subDoc"
 
 
-class contentPart(CT_Rel):
+class contentPart(CT_Rel):  # noqa: N801
     """A content part."""
 
     __name__ = "contentPart"
 
 
-class altChunk(CT_Rel):
+class altChunk(CT_Rel):  # noqa: N801
     """An alternate format chunk."""
 
     __type__ = "CT_AltChunk"

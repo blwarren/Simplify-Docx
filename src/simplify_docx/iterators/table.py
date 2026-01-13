@@ -8,15 +8,15 @@ from .generic import register_iterator
 # TABLE ITERATOR
 register_iterator(
     "CT_Tbl",
-    TAGS_TO_IGNORE=[qn("w:tblPr"), qn("w:tblGrid")],
+    tags_to_ignore=[qn("w:tblPr"), qn("w:tblGrid")],
     extends=["EG_ContentRowContent"],
 )
 
 register_iterator(
     "EG_ContentRowContent",
-    TAGS_TO_YIELD={qn("w:tr"): tr, qn("w:sdt"): empty},
-    TAGS_TO_NEST={qn("w:customXml"): "EG_ContentRowContent"},
-    TAGS_TO_IGNORE=[qn("w:customXmlPr")],
+    tags_to_yield={qn("w:tr"): tr, qn("w:sdt"): empty},
+    tags_to_nest={qn("w:customXml"): "EG_ContentRowContent"},
+    tags_to_ignore=[qn("w:customXmlPr")],
     extends=["EG_RangeMarkupElements"],
 )
 
@@ -24,15 +24,15 @@ register_iterator(
 # ROW ITERATOR
 register_iterator(
     "CT_Row",
-    TAGS_TO_IGNORE=[qn("w:tblPrEx"), qn("w:trPr")],
+    tags_to_ignore=[qn("w:tblPrEx"), qn("w:trPr")],
     extends=["EG_ContentCellContent"],
 )
 
 register_iterator(
     "EG_ContentCellContent",
-    TAGS_TO_YIELD={qn("w:tc"): tc, qn("w:sdt"): empty},
-    TAGS_TO_NEST={qn("w:customXml"): "EG_ContentCellContent"},
-    TAGS_TO_IGNORE=[
+    tags_to_yield={qn("w:tc"): tc, qn("w:sdt"): empty},
+    tags_to_nest={qn("w:customXml"): "EG_ContentCellContent"},
+    tags_to_ignore=[
         # FORMATTING PROPERTIES
         qn("w:customXmlPr")
     ],
@@ -40,4 +40,4 @@ register_iterator(
 )
 
 # CELL ITERATOR
-register_iterator("CT_Tc", TAGS_TO_IGNORE=[qn("w:tcPr")], extends=["EG_BlockLevelElts"])
+register_iterator("CT_Tc", tags_to_ignore=[qn("w:tcPr")], extends=["EG_BlockLevelElts"])

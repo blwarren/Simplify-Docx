@@ -1,10 +1,17 @@
 """A utility function for walking a simplified document."""
 
+from collections.abc import Callable, Sequence
 from inspect import signature
 
 
-def walk(document, fun, TYPE="document", no_iter=None):
-    """Walk an document tree and apply a function to matching nodes.
+def walk(  # noqa: PLR0912
+    document: dict[str, object],
+    fun: Callable[..., object],
+    node_type: str | None = "document",
+    no_iter: Sequence[str] | None = None,
+    **kwargs: object,
+) -> object | None:
+    """Walk a document tree and apply a function to matching nodes.
 
     :param document: Simplified Docx element to walk
     :type document:object
@@ -16,8 +23,8 @@ def walk(document, fun, TYPE="document", no_iter=None):
             an array of ``VALUE``s and ``None`` if the current element is the
             parent's ``VALUE``.
     :type fun: Callable
-    :param TYPE: The node ``TYPE``s at which to apply the function ``fun``
-    :type TYPE: str
+    :param node_type: The node ``TYPE``s at which to apply the function ``fun``
+    :type node_type: str
     :param no_iter: Optional. A list of elmenet ``TYPE``s into which the walker
             should refrain from walking into. For example, setting
             ``no_iter=["paragraph"]`` would prevent the walker from traversing
@@ -27,6 +34,12 @@ def walk(document, fun, TYPE="document", no_iter=None):
     :return: ``None``
     :return type: None
     """
+    if "TYPE" in kwargs:
+        node_type = kwargs.pop("TYPE")
+    if kwargs:
+        msg = f"Unexpected keyword arguments: {', '.join(sorted(kwargs))}"
+        raise TypeError(msg)
+
     _sig = signature(fun)
     _params = _sig.parameters
 
@@ -45,7 +58,7 @@ def walk(document, fun, TYPE="document", no_iter=None):
             # CURRENT IS AN OBJECT:
 
             # APPLY THE FUNCTION
-            if TYPE is None or current.get("TYPE", None) == TYPE:
+            if node_type is None or current.get("TYPE", None) == node_type:
                 if has_multiple_parameters:
                     try:
                         parent, parent_index = stack[-1]

@@ -7,7 +7,7 @@ from .generic import register_iterator
 
 register_iterator(
     "CT_R",
-    TAGS_TO_YIELD={
+    tags_to_yield={
         qn("w:t"): text,
         qn("w:sym"): SymbolChar,
         qn("w:br"): simpleTextElement,
@@ -34,7 +34,7 @@ register_iterator(
         qn("w:object"): empty,
         qn("w:drawing"): empty,
     },
-    TAGS_TO_IGNORE=[
+    tags_to_ignore=[
         qn("w:rPr"),
         qn("w:delText"),
         qn("w:delInstrText"),

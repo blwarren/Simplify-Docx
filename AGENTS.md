@@ -12,7 +12,7 @@ When you make changes, you must follow these conventions:
 
 ### Docstrings and comments
 
-- Prefer **docstrings** (Google/Numpy style is fine; keep consistent with existing Numpy-style docstrings in `main.py`).
+- Prefer **docstrings** in Google format. If you find docstrings in a format inconsistent with Google style, modify it.
 - Use comments sparingly; only when intent is non-obvious and cannot be expressed clearly via names/structure.
 
 ### Tooling

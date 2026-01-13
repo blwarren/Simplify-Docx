@@ -8,7 +8,7 @@ from .generic import register_iterator
 # RANGE MARKUP
 register_iterator(
     "EG_RangeMarkupElements",
-    TAGS_TO_IGNORE=[
+    tags_to_ignore=[
         qn("w:bookmarkStart"),
         qn("w:bookmarkEnd"),
         qn("w:commentRangeStart"),
@@ -16,7 +16,7 @@ register_iterator(
         qn("w:moveToRangeStart"),
         qn("w:moveToRangeEnd"),
     ],
-    TAGS_TO_WARN={
+    tags_to_warn={
         qn("w:customXmlInsRangeStart"): "Ignoring Revision Tags",
         qn("w:customXmlInsRangeEnd"): "Ignoring Revision Tags",
         qn("w:customXmlDelRangeStart"): "Ignoring Revision Tags",
@@ -26,15 +26,15 @@ register_iterator(
         qn("w:customXmlMoveToRangeStart"): "Ignoring Revision Tags",
         qn("w:customXmlMoveToRangeEnd"): "Ignoring Revision Tags",
     },
-    TAGS_TO_SKIP={qn("w:moveFromRangeStart"): ("id", qn("w:MoveFromRangeEnd"))},
+    tags_to_skip={qn("w:moveFromRangeStart"): ("id", qn("w:MoveFromRangeEnd"))},
 )
 
 # RUN LEVEL LEMENTS
 register_iterator(
     "EG_RunLevelElts",
-    TAGS_TO_YIELD={qn("m:oMathPara"): empty, qn("m:oMath"): empty},
-    TAGS_TO_NEST={qn("w:ins"): "EG_RunLevelElts", qn("w:moveTo"): "EG_RunLevelElts"},
-    TAGS_TO_IGNORE=[
+    tags_to_yield={qn("m:oMathPara"): empty, qn("m:oMath"): empty},
+    tags_to_nest={qn("w:ins"): "EG_RunLevelElts", qn("w:moveTo"): "EG_RunLevelElts"},
+    tags_to_ignore=[
         # INVISIBLE THINGS
         qn("w:proofErr"),
         qn("w:permStart"),
@@ -53,16 +53,16 @@ register_iterator(
 # BLOCK LEVEL ELEMENTS
 register_iterator(
     "EG_BlockLevelElts",
-    TAGS_TO_YIELD={
+    tags_to_yield={
         qn("w:p"): paragraph,
         qn("w:tbl"): table,
         qn("w:sdt"): empty,
         qn("w:altChunk"): altChunk,
     },
-    TAGS_TO_NEST={qn("w:customXml"): "EG_BlockLevelElts"},
-    TAGS_TO_IGNORE=[qn("w:sectPr"), qn("w:tcPr"), qn("w:pPr")],
+    tags_to_nest={qn("w:customXml"): "EG_BlockLevelElts"},
+    tags_to_ignore=[qn("w:sectPr"), qn("w:tcPr"), qn("w:pPr")],
     extends=["EG_RunLevelElts"],
 )
 
 # BODY
-register_iterator("CT_Body", TAGS_TO_IGNORE=[qn("w:sectPr")], extends=["EG_BlockLevelElts"])
+register_iterator("CT_Body", tags_to_ignore=[qn("w:sectPr")], extends=["EG_BlockLevelElts"])

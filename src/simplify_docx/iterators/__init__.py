@@ -4,7 +4,7 @@
 # iterator definitions (for side effects only):
 import importlib
 
-from .generic import xml_iter
+from .generic import xml_iter as xml_iter
 
 importlib.import_module(".table", __package__)
 importlib.import_module(".run", __package__)

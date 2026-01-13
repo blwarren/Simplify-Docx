@@ -71,7 +71,7 @@ def test_xml_iter_uses_lxml_sibling_traversal() -> None:
 
     iterator_name = "test_lxml_iter"
     with _clean_iterators():
-        register_iterator(iterator_name, TAGS_TO_YIELD={"a": DummyElement, "b": DummyElement})
+        register_iterator(iterator_name, tags_to_yield={"a": DummyElement, "b": DummyElement})
         build_iterators()
 
         tags = [elt.tag for elt in xml_iter(root, iterator_name)]
