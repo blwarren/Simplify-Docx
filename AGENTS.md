@@ -37,3 +37,7 @@ If the above commands reveal any issues, fix them before proceeding.
 
 - Once all formatting and linting is complete, run all tests:
   - `uv run pytest`
+
+## Commits
+
+- **Always** provide a commit message when you're finished. The first line of the commit message (the "subject line") should be 50 characters or less, followed by a brief description of the changes made.
