@@ -1,5 +1,7 @@
 # Overview
 
+Note: This repository is a community-maintained fork of the original Microsoft Research project. It is not an official Microsoft library.
+
 DOCX files are complex, and their complexity makes scraping documents
 for their content difficult. The aim of this package is to simplify
 `.docx` files to just the components which carry meaning, thereby easing the

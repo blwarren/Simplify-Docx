@@ -1,9 +1,9 @@
-"""
-Build the iterator for the run elements
-"""
+"""Build the iterator for the run elements."""
+
 from docx.oxml.ns import qn
+
+from ..elements import SymbolChar, contentPart, empty, fldChar, simpleTextElement, text
 from .generic import register_iterator
-from ..elements import text, simpleTextElement, SymbolChar, empty, contentPart, fldChar
 
 register_iterator(
     "CT_R",

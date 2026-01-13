@@ -1,30 +1,27 @@
-"""
-The body element
-"""
-from typing import Dict, Any, Optional, Iterator
+"""The body element."""
+
+from collections.abc import Iterator
+from typing import Any
+
 from .base import container
 
+
 class document(container):
-    """
-    A document body element
-    """
+    """A document body element."""
+
     __type__ = "CT_Document"
 
 
 class CT_Rel(container):
-    """
-    A document body element
-    """
+    """A document body element."""
 
     __type__ = "CT_Rel"
     __name__ = "CT_Rel"
 
     def to_json(
-        self, doc, options: Dict[str, str] = None, super_iter: Optional[Iterator] = None
-    ) -> Dict[str, Any]:
-        """
-        Coerce a container object to JSON
-        """
+        self, doc, options: dict[str, str] | None = None, super_iter: Iterator | None = None
+    ) -> dict[str, Any]:
+        """Coerce a container object to JSON."""
         chunkId = self.fragment.rId
         chunkPart = doc.part.related_parts[chunkId]
         chunkDoc = chunkPart.element
@@ -37,24 +34,18 @@ class CT_Rel(container):
 
 
 class subDoc(CT_Rel):
-    """
-    A nested sub-document
-    """
+    """A nested sub-document."""
 
     __name__ = "subDoc"
 
 
 class contentPart(CT_Rel):
-    """
-    A content part
-    """
+    """A content part."""
 
     __name__ = "contentPart"
 
 
 class altChunk(CT_Rel):
-    """
-    An alternate format chunk
-    """
+    """An alternate format chunk."""
 
     __type__ = "CT_AltChunk"

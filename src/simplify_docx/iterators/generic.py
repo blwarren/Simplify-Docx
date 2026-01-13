@@ -1,82 +1,64 @@
-"""
-Generic XML iterators
-"""
+"""Generic XML iterators."""
 # pylint: disable=too-many-arguments, too-many-branches
 
+from collections.abc import Callable, Generator, Sequence
+from typing import NamedTuple, NewType
 from warnings import warn
-from typing import (
-        Optional,
-        Tuple,
-        Type,
-        Dict,
-        Sequence,
-        NamedTuple,
-        NewType,
-        Callable,
-        Generator,
-        List
-)
+
 from ..elements.base import el
 from ..types import xmlFragment
 from ..utils.tag import get_tag
 from ..utils.warnings import UnexpectedElementWarning
 
-FragmentIterator = NewType('FragmentIterator',
-        Callable[[xmlFragment, Optional[str]], Generator[xmlFragment, None, None]])
+FragmentIterator = NewType("FragmentIterator", Callable[[xmlFragment, str | None], Generator[xmlFragment]])
 
 # CONSTANTS
 
+
 class ElementHandlers(NamedTuple):
-    """
-    A convenience class
-    """
-    TAGS_TO_YIELD: Optional[Dict[str, Type[el]]]
-    TAGS_TO_NEST: Optional[Dict[str, str]]
-    TAGS_TO_IGNORE: Optional[Sequence[str]]
-    TAGS_TO_WARN: Optional[Dict[str, str]]
-    TAGS_TO_SKIP: Optional[Dict[str, Tuple[str, str]]]
-    extends: Optional[Sequence[str]]
+    """A convenience class."""
 
-ElementHandlers.__new__.__defaults__ = (None,)* 6 # https://stackoverflow.com/questions/11351032/
+    TAGS_TO_YIELD: dict[str, type[el]] | None
+    TAGS_TO_NEST: dict[str, str] | None
+    TAGS_TO_IGNORE: Sequence[str] | None
+    TAGS_TO_WARN: dict[str, str] | None
+    TAGS_TO_SKIP: dict[str, tuple[str, str]] | None
+    extends: Sequence[str] | None
 
-__definitions__: Dict[str, ElementHandlers] = {}
-__built__: Dict[str, ElementHandlers] = {}
 
-def register_iterator(name: str,
-                      TAGS_TO_YIELD: Dict[str, Type[el]] = None,
-                      TAGS_TO_NEST: Dict[str, str] = None,
-                      TAGS_TO_IGNORE: Sequence[str] = None,
-                      TAGS_TO_WARN: Dict[str, str] = None,
-                      TAGS_TO_SKIP: Dict[str, Tuple[str, str]] = None,
-                      extends: Optional[Sequence[str]] = None,
-                      check_name: bool = True,
-                     ) -> None:
-    """ 
-    An opinionated iterator which ignores deleted and moved resources, and
+ElementHandlers.__new__.__defaults__ = (None,) * 6  # https://stackoverflow.com/questions/11351032/
+
+__definitions__: dict[str, ElementHandlers] = {}
+__built__: dict[str, ElementHandlers] = {}
+
+
+def register_iterator(
+    name: str,
+    TAGS_TO_YIELD: dict[str, type[el]] | None = None,
+    TAGS_TO_NEST: dict[str, str] | None = None,
+    TAGS_TO_IGNORE: Sequence[str] | None = None,
+    TAGS_TO_WARN: dict[str, str] | None = None,
+    TAGS_TO_SKIP: dict[str, tuple[str, str]] | None = None,
+    extends: Sequence[str] | None = None,
+    check_name: bool = True,
+) -> None:
+    """An opinionated iterator which ignores deleted and moved resources, and
     passes through in-line revision containers such as InsertedRun, and
-    orientation elements like bookmarks, comments, and permissions
+    orientation elements like bookmarks, comments, and permissions.
     """
-
     if check_name and name in __definitions__:
-        raise ValueError("iterator named '%s' already registered" % name)
+        raise ValueError(f"iterator named '{name}' already registered")
 
     __definitions__[name] = ElementHandlers(
-            TAGS_TO_YIELD,
-            TAGS_TO_NEST,
-            TAGS_TO_IGNORE,
-            TAGS_TO_WARN,
-            TAGS_TO_SKIP,
-            extends=extends
-            )
+        TAGS_TO_YIELD, TAGS_TO_NEST, TAGS_TO_IGNORE, TAGS_TO_WARN, TAGS_TO_SKIP, extends=extends
+    )
+
 
 def build_iterators() -> None:
-    """
-    Build the iterators for the current iteration
-    """
+    """Build the iterators for the current iteration."""
+    _resovled: list[str] = []
 
-    _resovled: List[str] = []
-    def _resolve(x: str):
-
+    def _resolve(x: str) -> None:
         if x in _resovled:
             return
 
@@ -96,7 +78,7 @@ def build_iterators() -> None:
             try:
                 _resolve(dependency)
             except KeyError:
-                msg = "Iterator for '%s' depends on undefined group '%s'" % (x, dependency,)
+                msg = f"Iterator for '{x}' depends on undefined group '{dependency}'"
                 raise RuntimeError(msg)
 
             ddef = __built__[dependency]
@@ -112,12 +94,12 @@ def build_iterators() -> None:
                 TAGS_TO_SKIP.update(ddef.TAGS_TO_SKIP)
 
         __built__[x] = ElementHandlers(
-                TAGS_TO_YIELD=TAGS_TO_YIELD,
-                TAGS_TO_NEST=TAGS_TO_NEST,
-                TAGS_TO_IGNORE=TAGS_TO_IGNORE,
-                TAGS_TO_WARN=TAGS_TO_WARN,
-                TAGS_TO_SKIP=TAGS_TO_SKIP,
-                )
+            TAGS_TO_YIELD=TAGS_TO_YIELD,
+            TAGS_TO_NEST=TAGS_TO_NEST,
+            TAGS_TO_IGNORE=TAGS_TO_IGNORE,
+            TAGS_TO_WARN=TAGS_TO_WARN,
+            TAGS_TO_SKIP=TAGS_TO_SKIP,
+        )
 
         _resovled.append(x)
 
@@ -125,14 +107,8 @@ def build_iterators() -> None:
         _resolve(name)
 
 
-def xml_iter(
-        p: xmlFragment,
-        name: str,
-        msg: Optional[str] = None) -> Generator[el, None, None]:
-    """
-    Iterates over an XML node yielding an appropriate element (el)
-    """
-
+def xml_iter(p: xmlFragment, name: str, msg: str | None = None) -> Generator[el]:
+    """Iterates over an XML node yielding an appropriate element (el)."""
     handlers = __built__[name]
 
     # INIT PHASE
@@ -140,49 +116,37 @@ def xml_iter(
     if not children:
         return
 
-    current: Optional[xmlFragment] = p.getchildren()[0]
+    current: xmlFragment | None = p.getchildren()[0]
 
     # ITERATION PHASE
     while current is not None:
-
         if msg is not None and current.tag not in handlers.TAGS_TO_IGNORE:
-            print(msg +
-                  ("" if current.prefix is None else (current.prefix + ":")) +
-                  current.tag)
+            print(msg + ("" if current.prefix is None else (current.prefix + ":")) + current.tag)
 
-        if handlers.TAGS_TO_YIELD \
-                and current.tag in handlers.TAGS_TO_YIELD:
+        if handlers.TAGS_TO_YIELD and current.tag in handlers.TAGS_TO_YIELD:
             # Yield all math tags
             yield handlers.TAGS_TO_YIELD[current.tag](current)
 
-            if handlers.TAGS_TO_NEST \
-                    and current.tag in handlers.TAGS_TO_NEST:
-                _msg = None if msg is None else ("  "+msg)
+            if handlers.TAGS_TO_NEST and current.tag in handlers.TAGS_TO_NEST:
+                _msg = None if msg is None else ("  " + msg)
                 for elt in xml_iter(current, handlers.TAGS_TO_NEST[current.tag], _msg):
                     yield elt
 
-        elif handlers.TAGS_TO_NEST \
-                and current.tag in handlers.TAGS_TO_NEST:
-            _msg = None if msg is None else ("  "+msg)
+        elif handlers.TAGS_TO_NEST and current.tag in handlers.TAGS_TO_NEST:
+            _msg = None if msg is None else ("  " + msg)
             for elt in xml_iter(current, handlers.TAGS_TO_NEST[current.tag], _msg):
                 yield elt
 
-
-        elif handlers.TAGS_TO_WARN \
-                and current.tag in handlers.TAGS_TO_WARN:
+        elif handlers.TAGS_TO_WARN and current.tag in handlers.TAGS_TO_WARN:
             # Skip these unhandled tags with a warning
-            warn("Skipping %s tag: %s" % (handlers.TAGS_TO_WARN[current.tag],
-                                          current.tag, ))
+            warn(f"Skipping {handlers.TAGS_TO_WARN[current.tag]} tag: {current.tag}", stacklevel=2)
 
-
-        elif handlers.TAGS_TO_IGNORE \
-                and current.tag in handlers.TAGS_TO_IGNORE:
+        elif handlers.TAGS_TO_IGNORE and current.tag in handlers.TAGS_TO_IGNORE:
             # ignore paragraph properties, deleted content and meta tags
             # like bookmarks, permissions, comments, etc.
             pass
 
-        elif handlers.TAGS_TO_SKIP \
-                and current.tag in handlers.TAGS_TO_SKIP:
+        elif handlers.TAGS_TO_SKIP and current.tag in handlers.TAGS_TO_SKIP:
             # Skip over content that has been moved elsewhere
             data = handlers.TAGS_TO_SKIP[current.tag]
             current = skip_range(current, data[0], data[1])
@@ -190,23 +154,17 @@ def xml_iter(
                 return
 
         else:
-            warn("Skipping unexpected tag: %s" % (current.tag),
-                 UnexpectedElementWarning)
+            warn(f"Skipping unexpected tag: {current.tag}", UnexpectedElementWarning, stacklevel=2)
 
         current = current.getnext()
 
     return
 
 
-def skip_range(x: xmlFragment,
-               id_attr: str,
-               waitfor: str) -> Optional[xmlFragment]:
-    """
-    A utility which returns the element at the end of the range
-    """
-
+def skip_range(x: xmlFragment, id_attr: str, waitfor: str) -> xmlFragment | None:
+    """A utility which returns the element at the end of the range."""
     _id: str = x.attrib[id_attr]
-    current: Optional[xmlFragment] = x.getnext()
+    current: xmlFragment | None = x.getnext()
 
     while True:
         if current is None:

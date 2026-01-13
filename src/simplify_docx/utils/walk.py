@@ -1,12 +1,10 @@
-"""
-A utility function for walking a simplified document
-"""
+"""A utility function for walking a simplified document."""
+
 from inspect import signature
 
 
 def walk(document, fun, TYPE="document", no_iter=None):
-    """
-    Walk an document tree and apply a function to matching nodes
+    """Walk an document tree and apply a function to matching nodes.
 
     :param document: Simplified Docx element to walk
     :type document:object
@@ -33,8 +31,7 @@ def walk(document, fun, TYPE="document", no_iter=None):
     _params = _sig.parameters
 
     has_multiple_parameters = len(_params) > 1 or any(
-        param.kind in (param.VAR_KEYWORD, param.VAR_POSITIONAL)
-        for param in _params.values()
+        param.kind in (param.VAR_KEYWORD, param.VAR_POSITIONAL) for param in _params.values()
     )
 
     stack = [(document, None)]

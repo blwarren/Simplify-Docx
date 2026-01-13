@@ -1,10 +1,9 @@
-"""
-Table and row iterators
-"""
+"""Table and row iterators."""
 
 from docx.oxml.ns import qn
+
+from ..elements import empty, tc, tr
 from .generic import register_iterator
-from ..elements import tr, tc, empty
 
 # TABLE ITERATOR
 register_iterator(

@@ -1,10 +1,11 @@
-# -- coding: utf-8 --
-"""
-Run level elements
-"""
+"""Run level elements."""
+
 import re
-from typing import Dict, Any, Iterator, Optional
+from collections.abc import Iterator
+from typing import Any
+
 from docx.oxml.ns import qn
+
 from ..types import xmlFragment
 from . import el  # , IncompatibleTypeError
 
@@ -12,26 +13,20 @@ RE_SPACES = re.compile("  +", re.IGNORECASE)
 
 
 class empty(el):
-    """
-    Generic for CT_Empty elements
-    """
+    """Generic for CT_Empty elements."""
 
     __type__: str
 
-    def __init__(self, x: xmlFragment):
-        super(empty, self).__init__(x)
+    def __init__(self, x: xmlFragment) -> None:
+        super().__init__(x)
         self.__type__ = x.tag.split("}")[-1]
 
-    def to_json(
-        self, doc, options: Dict[str, str], super_iter: Optional[Iterator] = None
-    ) -> Dict[str, Any]:  # pylint: disable=unused-argument
-        """
-        coerce an object to JSON
-        """
+    def to_json(self, doc, options: dict[str, str], super_iter: Iterator | None = None) -> dict[str, Any]:  # pylint: disable=unused-argument
+        """Coerce an object to JSON."""
         if options.get("empty-as-text", False):
-            return {"TYPE": "CT_Text", "VALUE": "[w:%s]" % self.__type__}
+            return {"TYPE": "CT_Text", "VALUE": f"[w:{self.__type__}]"}
 
-        return {"TYPE": "CT_Empty", "VALUE": "[w:%s]" % self.__type__}
+        return {"TYPE": "CT_Empty", "VALUE": f"[w:{self.__type__}]"}
 
 
 # settings to be imported at a later time
@@ -43,82 +38,72 @@ default_text_options = {
 
 
 class text(el):
-    """
-    A Text element
-    """
+    """A Text element."""
 
     __type__: str
     value: str
 
-    def __init__(self, x: xmlFragment):
-        super(text, self).__init__(x)
+    def __init__(self, x: xmlFragment) -> None:
+        super().__init__(x)
         self.__type__ = x.tag.split("}")[-1]
         if x.text is None:
             self.value = ""
         else:
             self.value = x.text
 
-    def to_json(
-        self, doc, options: Dict[str, str], super_iter: Optional[Iterator] = None
-    ) -> Dict[str, Any]:  # pylint: disable=unused-argument
-        """
-        coerce an object to JSON
-        """
-
+    def to_json(self, doc, options: dict[str, str], super_iter: Iterator | None = None) -> dict[str, Any]:  # pylint: disable=unused-argument
+        """Coerce an object to JSON."""
         _value = self.value
         if options.get("dumb-quotes", True):
             _value = (
-                _value.replace(u"\u2018", "'")
-                .replace(u"\u2019", "'")
-                .replace(u"\u201a", "'")
-                .replace(u"\u201b", "'")
+                _value.replace("\u2018", "'").replace("\u2019", "'").replace("\u201a", "'").replace("\u201b", "'")
             )
-            _value = _value.replace(u"\u201c", '"').replace(u"\u201d", '"')
+            _value = _value.replace("\u201c", '"').replace("\u201d", '"')
 
         if options.get("dumb-spaces", True):
             _value = (
-                _value.replace(u"\u2000", " ")
-                .replace(u"\u2001", " ")
-                .replace(u"\u2002", " ")
-                .replace(u"\u2003", " ")
-                .replace(u"\u2004", " ")
-                .replace(u"\u2005", " ")
-                .replace(u"\u2006", " ")
-                .replace(u"\u2007", " ")
-                .replace(u"\u2008", " ")
-                .replace(u"\u2009", " ")
-                .replace(u"\u200A", " ")
-                .replace(u"\u201B", " ")
+                _value.replace("\u2000", " ")
+                .replace("\u2001", " ")
+                .replace("\u2002", " ")
+                .replace("\u2003", " ")
+                .replace("\u2004", " ")
+                .replace("\u2005", " ")
+                .replace("\u2006", " ")
+                .replace("\u2007", " ")
+                .replace("\u2008", " ")
+                .replace("\u2009", " ")
+                .replace("\u200a", " ")
+                .replace("\u201b", " ")
             )
 
         if options.get("dumb-hyphens", True):
             _value = (
-                _value.replace(u"\u2010", "-")
-                .replace(u"\u2011", "-")
-                .replace(u"\u2012", "-")
-                .replace(u"\u2013", "-")
-                .replace(u"\u2014", "-")
-                .replace(u"\u2015", "-")
-                .replace(u"\u00A0", "-")
+                _value.replace("\u2010", "-")
+                .replace("\u2011", "-")
+                .replace("\u2012", "-")
+                .replace("\u2013", "-")
+                .replace("\u2014", "-")
+                .replace("\u2015", "-")
+                .replace("\u00a0", "-")
             )
 
         if options.get("ignore-joiners", True):
-            _value = _value.replace(u"\u200C", "").replace(u"\u200D", "")
+            _value = _value.replace("\u200c", "").replace("\u200d", "")
 
         if options.get("flatten-inner-spaces", True):
             _value = RE_SPACES(" ", _value)
 
         if options.get("ignore-left-to-right-mark", False):
-            _value = _value.replace(u"\u200E", "")
+            _value = _value.replace("\u200e", "")
 
         if options.get("ignore-right-to-left-mark", False):
-            _value = _value.replace(u"\u200F", "")
+            _value = _value.replace("\u200f", "")
 
         return {"TYPE": "CT_Text", "VALUE": _value}
 
 
 class SymbolChar(el):
-    """ The SymbolChar element. Even though this is basically a test element,
+    """The SymbolChar element. Even though this is basically a test element,
     it's an element in which the font is significant.
     """
 
@@ -126,17 +111,13 @@ class SymbolChar(el):
     char: str
     font: str
 
-    def __init__(self, x):
-        super(SymbolChar, self).__init__(x)
+    def __init__(self, x) -> None:
+        super().__init__(x)
         self.char = x.get(qn("w:char"))
         self.font = x.get(qn("w:font"))
 
-    def to_json(
-        self, doc, options: Dict[str, str], super_iter: Optional[Iterator] = None
-    ) -> Dict[str, Any]:  # pylint: disable=unused-argument
-        """
-        coerce an object to JSON
-        """
+    def to_json(self, doc, options: dict[str, str], super_iter: Iterator | None = None) -> dict[str, Any]:  # pylint: disable=unused-argument
+        """Coerce an object to JSON."""
         if options.get("symbol-as-text", True):
             return {"TYPE": "CT_Text", "VALUE": self.char}
 
@@ -153,7 +134,7 @@ simpleTextElementText = {
 }
 
 
-tagToTypeMap: Dict[str, str] = {
+tagToTypeMap: dict[str, str] = {
     qn("w:br"): "Break",
     qn("w:cr"): "CarriageReturn",
     qn("w:tab"): "TabChar",
@@ -164,16 +145,13 @@ tagToTypeMap: Dict[str, str] = {
 
 
 class simpleTextElement(el):
-    """
-    A simple text element represented by a CT_Empty
-    """
+    """A simple text element represented by a CT_Empty."""
 
-    def __init__(self, x: xmlFragment):
-        super(simpleTextElement, self).__init__(x)
+    def __init__(self, x: xmlFragment) -> None:
+        super().__init__(x)
         self.__type__ = tagToTypeMap[x.tag]
 
-    def to_json(self, doc, options=None, super_iter: Optional[Iterator] = None):
-
+    def to_json(self, doc, options=None, super_iter: Iterator | None = None):
         if options.get("special-characters-as-text", True):
             return {"TYPE": "CT_Text", "VALUE": simpleTextElementText[self.__type__]}
 

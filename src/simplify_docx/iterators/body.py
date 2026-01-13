@@ -1,10 +1,9 @@
-"""
-Iterate over containers (i.e. "things that can contain EG_BlockLevelElts")
-"""
-from docx.oxml.ns import qn
-from .generic import register_iterator
-from ..elements import paragraph, table, empty, altChunk
+"""Iterate over containers (i.e. "things that can contain EG_BlockLevelElts")."""
 
+from docx.oxml.ns import qn
+
+from ..elements import altChunk, empty, paragraph, table
+from .generic import register_iterator
 
 # RANGE MARKUP
 register_iterator(
@@ -66,6 +65,4 @@ register_iterator(
 )
 
 # BODY
-register_iterator(
-    "CT_Body", TAGS_TO_IGNORE=[qn("w:sectPr")], extends=["EG_BlockLevelElts"]
-)
+register_iterator("CT_Body", TAGS_TO_IGNORE=[qn("w:sectPr")], extends=["EG_BlockLevelElts"])

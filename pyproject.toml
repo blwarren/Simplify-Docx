@@ -1,0 +1,99 @@
+[build-system]
+requires = ["uv_build>=0.9.23,<0.10.0"]
+build-backend = "uv_build"
+
+[project]
+name = "simplify-docx"
+version = "0.1.0"
+description = "A utility for simplifying python-docx document objects"
+readme = "README.md"
+requires-python = ">=3.13"
+license = { file = "LICENSE" }
+authors = [{ name = "Microsoft Research", email = "jathorpe@microsoft.com" }]
+maintainers = [{ name = "Bobby Warren", email = "blwarren@gmail.com" }]
+keywords = ["docx", "json", "python-docx", "word"]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Developers",
+  "Operating System :: Unix",
+  "Operating System :: POSIX",
+  "Operating System :: Microsoft :: Windows",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+  "Topic :: Utilities",
+]
+dependencies = [
+  "lxml>=6.0.2,<7",
+  "more-itertools==7.0.0",
+  "python-docx>=0.8.10",
+  "pytest>=8.0.0,<9",
+  "six>=1.12.0,<2",
+  "wincertstore==0.2; platform_system == \"Windows\"",
+]
+
+[tool.uv.build-backend]
+module-name = "simplify_docx"
+
+[tool.ruff]
+line-length = 115
+
+[tool.ruff.lint]
+select = [
+  # pycodestyle
+  "E",
+  # Pyflakes
+  "F",
+  # pyupgrade
+  "UP",
+  # flake8-bandit
+  "S",
+  # flake8-blind-except
+  "BLE",
+  # flake8-bugbear
+  "B",
+  # flake8-builtins
+  "A",
+  # flake8-comprehensions
+  "C4",
+  # flake8-datetimez
+  "DTZ",
+  # flake8-pytest-style
+  "PT",
+  # flake8-return
+  "RET",
+  # flake8-simplify
+  "SIM",
+  # flake8-unused-arguments
+  "ARG",
+  # flake8-use-pathlib
+  "PTH",
+  # isort
+  "I",
+  # flake8-annotations
+  "ANN",
+  # NumPy-specific rules
+  "NPY",
+  # pandas-vet
+  "PD",
+  # pep8-naming
+  "N",
+  # Perflint
+  "PERF",
+  # pydocstyle
+  "D",
+  # Pylint
+  "PL",
+  # refurb
+  "FURB",
+  # Ruff-specific rules
+  "RUF",
+]
+
+ignore = ["E501", "D203", "D213"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*.py" = ["S101"]

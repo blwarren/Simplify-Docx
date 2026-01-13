@@ -1,12 +1,8 @@
-"""
-Utilities for applying friendly names
-"""
+"""Utilities for applying friendly names."""
 
 
 def apply_friendly_names(x: object) -> None:
-    """
-    A utility function for applying friendly names to a simplified document
-    """
+    """A utility function for applying friendly names to a simplified document."""
     _walk(x, _apply_friendly_names)
 
 
@@ -36,11 +32,11 @@ __friendly_names__ = {
 }
 
 
-def _apply_friendly_names(x):
+def _apply_friendly_names(x) -> None:
     x["TYPE"] = __friendly_names__.get(x["TYPE"], x["TYPE"])
 
 
-def _walk(x, fun):
+def _walk(x, fun) -> None:
     fun(x)
     val = x.get("VALUE", None)
     if not val:

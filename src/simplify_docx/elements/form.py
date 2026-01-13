@@ -1,44 +1,37 @@
-"""
-Form Field Data
-"""
-from typing import Dict, Any, Sequence, Optional, Iterator
+"""Form Field Data."""
+
+from collections.abc import Iterator, Sequence
+from typing import Any
 from warnings import warn
+
 from ..types import xmlFragment
 from . import el
 from .base import get_val
 
 
 class checkBox(el):
-    """
-    The ffData checkBox attribute
-    """
+    """The ffData checkBox attribute."""
 
     __type__ = "CT_FFCheckBox"
     __props__ = ["default", "checked"]
 
 
 class ddList(el):
-    """
-    The ffData ddList attribute
-    """
+    """The ffData ddList attribute."""
 
     __type__ = "CT_FFDDList"
     __props__ = ["default", "result", "listEntry_lst"]
 
 
 class textInput(el):
-    """
-    The ffData textInput attribute
-    """
+    """The ffData textInput attribute."""
 
     __type__ = "CT_FFTextInput"
     __props__ = ["default", "type_", "format_"]
 
 
 class ffData(el):
-    """
-    The ffData element
-    """
+    """The ffData element."""
 
     __props__ = [
         "name",
@@ -53,8 +46,8 @@ class ffData(el):
     ]
     __type__: str = "CT_FFData"
 
-    def __init__(self, x: xmlFragment):
-        super(ffData, self).__init__(x)
+    def __init__(self, x: xmlFragment) -> None:
+        super().__init__(x)
 
         _checkBox = x.checkBox
         if _checkBox is not None:
@@ -68,9 +61,8 @@ class ffData(el):
         if _textInput is not None:
             self.textInput = textInput(_textInput)
 
-    def to_json(self, doc, options, super_iter: Optional[Iterator] = None):
-
-        out = super(ffData, self).to_json(doc, options, super_iter)
+    def to_json(self, doc, options, super_iter: Iterator | None = None):
+        out = super().to_json(doc, options, super_iter)
 
         if self.fragment.checkBox is not None:
             out["checkBox"] = self.checkBox.to_json(doc, options)
@@ -84,26 +76,22 @@ class ffData(el):
         return out
 
     def field_results(self):
-        """
-        Extract the field results elements
-        """
+        """Extract the field results elements."""
         return self.fragment
 
 
 class fldChar(el):
-    """
-    Form Field Data
-    """
+    """Form Field Data."""
 
     __type__: str = "fldChar"
     __props__ = ["fldCharType", "fldLock", "dirty"]
 
     fieldCodes: Sequence[el]
     fieldResults: Sequence[el]
-    ffData: Optional[ffData]
+    ffData: ffData | None
 
-    def __init__(self, x: xmlFragment):
-        super(fldChar, self).__init__(x)
+    def __init__(self, x: xmlFragment) -> None:
+        super().__init__(x)
 
         self.status = "fieldCodes"
         self.fieldCodes = []
@@ -120,19 +108,16 @@ class fldChar(el):
             elif x.ffData.textInput is not None:
                 self.__type__ = "TextInput"
             else:
-                warn(
-                    "fldChar has unexpected ffData attribute: treating as generic-field"
-                )
+                warn("fldChar has unexpected ffData attribute: treating as generic-field", stacklevel=2)
                 self.__type__ = "generic-field"
         else:
             self.ffData = None
             self.__type__ = "generic-field"
 
     def to_json(  # pylint: disable=too-many-branches, too-many-return-statements, too-many-statements
-        self, doc, options: Dict[str, str], super_iter: Optional[Iterator] = None
-    ) -> Dict[str, Any]:
-
-        out = super(fldChar, self).to_json(doc, options, super_iter)
+        self, doc, options: dict[str, str], super_iter: Iterator | None = None
+    ) -> dict[str, Any]:
+        out = super().to_json(doc, options, super_iter)
         from .paragraph import merge_run_contents
 
         if self.__type__ == "Checkbox":
@@ -142,9 +127,7 @@ class fldChar(el):
             value = None if checked is None else checked.val
 
             if options.get("checkbox-as-text", False):
-                out.update(
-                    {"TYPE": "CT_Text", "VALUE": "[%s:%s]" % (self.__type__, value)}
-                )
+                out.update({"TYPE": "CT_Text", "VALUE": f"[{self.__type__}:{value}]"})
                 return out
 
             if options.get("simplify-checkbox", True):
@@ -166,17 +149,12 @@ class fldChar(el):
                 _result = self.ffData.ddList.props["result"]
                 _default = self.ffData.ddList.props["default"]
                 if _result is None:
-                    if _default is None:
-                        value = _values[0].val
-                    else:
-                        value = _values[_default.val].val
+                    value = _values[0].val if _default is None else _values[_default.val].val
                 else:
                     value = _values[_result.val].val
 
             if options.get("dropdown-as-text", False):
-                out.update(
-                    {"TYPE": "CT_Text", "VALUE": "[%s:%s]" % (self.__type__, value)}
-                )
+                out.update({"TYPE": "CT_Text", "VALUE": f"[{self.__type__}:{value}]"})
                 return out
 
             if options.get("simplify-dropdown", True):
@@ -191,16 +169,13 @@ class fldChar(el):
                 return out
 
         elif self.__type__ == "TextInput":
-
             _contents = [elt.to_json(doc, options) for elt in self.fieldResults]
             contents = merge_run_contents(_contents, options)
             value = contents[0]["VALUE"] if len(contents) == 1 else contents
 
             if options.get("textinput-as-text", False):
                 if len(contents) > 1:
-                    warn(
-                        "Textinput has more than one element; ignoring all but the first element"
-                    )
+                    warn("Textinput has more than one element; ignoring all but the first element", stacklevel=2)
                 out.update(
                     {
                         "TYPE": "CT_Text",
@@ -212,15 +187,12 @@ class fldChar(el):
             if options.get("simplify-textinput", True):
                 del out["fldCharType"]
                 if len(contents) > 1:
-                    warn(
-                        "Textinput has more than one element; ignoring all but the first element"
-                    )
+                    warn("Textinput has more than one element; ignoring all but the first element", stacklevel=2)
                 out["VALUE"] = contents[0]["VALUE"] if contents else ""
                 _update_from(out, self.ffData.textInput.props, ["default"])
                 return out
 
         else:
-
             _contents = [elt.to_json(doc, options) for elt in self.fieldResults]
             value = merge_run_contents(_contents, options)
             if options.get("flatten-generic-field", True):
@@ -245,12 +217,9 @@ class fldChar(el):
         return out
 
     def update(self, other: el) -> bool:
-        """
-        Update an incomplete field character
-        """
-
+        """Update an incomplete field character."""
         if self.status == "complete":
-            RuntimeError("Logic Error: Updating a completed field data")
+            raise RuntimeError("Logic Error: Updating a completed field data")
 
         if isinstance(other, fldChar):
             if other.props["fldCharType"] == "begin":
@@ -270,11 +239,9 @@ class fldChar(el):
         return False
 
 
-def _update_from(x: Dict[str, Any], y: Dict[str, Any], attrs: Sequence[str]) -> None:
-    """
-    A utility function for copying attributes from one object to another
-    """
+def _update_from(x: dict[str, Any], y: dict[str, Any], attrs: Sequence[str]) -> None:
+    """A utility function for copying attributes from one object to another."""
     for attr in attrs:
-        val = y.get(attr, None)
+        val = y.get(attr)
         if val is not None:
             x[attr] = get_val(val)

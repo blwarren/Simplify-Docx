@@ -1,33 +1,28 @@
-"""
-Coerce Docx Documents to JSON
+"""Coerce Docx Documents to JSON.
 
 Not thread safe! (but could be if build_iterators returned the built iterator
 definitions and passed them around...)
 """
 
-from typing import Union, Dict, Optional, Type, Any
-from .types.fragment import documentPart
-from .utils.walk import walk
-from .utils.friendly_names import apply_friendly_names
+from typing import Any, Dict, Optional, Type, Union
+
 from .elements import document
+from .types.fragment import documentPart
+from .utils.friendly_names import apply_friendly_names
 from .utils.set_options import set_options as __set_options__
+from .utils.walk import walk
 
 __version__ = "0.1.0"
+
 
 # --------------------------------------------------
 # Main API
 # --------------------------------------------------
-def simplify(doc: documentPart, options: Optional[Dict[str, Any]] = None):
-    """
-    Coerce Docx Documents to JSON
-    """
-
+def simplify(doc: documentPart, options: dict[str, Any] | None = None):
+    """Coerce Docx Documents to JSON."""
     # SET OPTIONS
-    _options: Dict[str, Any]
-    if options:
-        _options = dict(__default_options__, **options)
-    else:
-        _options = __default_options__
+    _options: dict[str, Any]
+    _options = dict(__default_options__, **options) if options else __default_options__
     __set_options__(_options)
 
     out = document(doc.element).to_json(doc, _options)
@@ -41,7 +36,7 @@ def simplify(doc: documentPart, options: Optional[Dict[str, Any]] = None):
 # --------------------------------------------------
 # Default Options
 # --------------------------------------------------
-__default_options__: Dict[str, Union[str, bool, int, float]] = {
+__default_options__: dict[str, str | bool | int | float] = {
     # general
     "friendly-names": True,
     # flattening special content

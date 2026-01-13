@@ -1,28 +1,23 @@
-"""
-Utilities for setting options that change how the document is traversed
-"""
+"""Utilities for setting options that change how the document is traversed."""
 
 from docx.oxml.ns import qn
-from typing import Dict, Union, Type
-from ..iterators.generic import register_iterator, build_iterators
-from ..elements import empty, fldSimple, hyperlink, customXml, subDoc, el
 
-def set_options(options: Dict[str, Union[str, bool, int, float]]) -> None:
-    """
-    Register iterators depending on the selected options
-    """
+from ..elements import customXml, el, empty, fldSimple, hyperlink, subDoc
+from ..iterators.generic import build_iterators, register_iterator
+
+
+def set_options(options: dict[str, str | bool | int | float]) -> None:
+    """Register iterators depending on the selected options."""
     __set_EG_PContents__(options)
     __set_EG_ContentRunContents__(options)
     build_iterators()
 
 
-def __set_EG_PContents__(options: Dict[str, Union[str, bool, int, float]]) -> None:
-    """
-    group:"EG_PContent"
-    """
-    TAGS_TO_YIELD: Dict[str, Type[el]] = {qn("w:subDoc"): subDoc}
+def __set_EG_PContents__(options: dict[str, str | bool | int | float]) -> None:
+    """group:"EG_PContent"."""
+    TAGS_TO_YIELD: dict[str, type[el]] = {qn("w:subDoc"): subDoc}
 
-    TAGS_TO_NEST: Dict[str, str] = {qn("w:r"): "CT_R"}
+    TAGS_TO_NEST: dict[str, str] = {qn("w:r"): "CT_R"}
 
     # -----------------------------------------------
     if options["flatten-simpleField"]:
@@ -47,16 +42,11 @@ def __set_EG_PContents__(options: Dict[str, Union[str, bool, int, float]]) -> No
     )
 
 
-def __set_EG_ContentRunContents__(
-    options: Dict[str, Union[str, bool, int, float]]
-) -> None:
-    """
-    group: EG_ContentRunContent
-    """
+def __set_EG_ContentRunContents__(options: dict[str, str | bool | int | float]) -> None:
+    """group: EG_ContentRunContent."""
+    TAGS_TO_YIELD: dict[str, type[el]] = {qn("w:sdt"): empty}
 
-    TAGS_TO_YIELD: Dict[str, Type[el]] = {qn("w:sdt"): empty}
-
-    TAGS_TO_NEST: Dict[str, str] = {qn("w:r"): "CT_R"}
+    TAGS_TO_NEST: dict[str, str] = {qn("w:r"): "CT_R"}
 
     # -----------------------------------------------
     if options["flatten-smartTag"]:
